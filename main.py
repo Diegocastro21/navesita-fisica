@@ -5,15 +5,18 @@ pygame.init()
 
 WIDTH, HEIGHT = 800, 600
 win = pygame.display.set_mode((WIDTH, HEIGHT))
-pygame.display.set_caption("Gravitational Slingshot Effect")
+pygame.display.set_caption("Efecto Honda Gravitatorio")
 
 FPS = 60
 PLANET_SIZE = 50
 OBJ_SIZE = 5
 VEL_SCALE = 100
+SHIP_SIZE = 20  # Tamaño para la imagen de la nave
+
 
 BG = pygame.transform.scale(pygame.image.load("background.jpg"), (WIDTH, HEIGHT))
 PLANET = pygame.transform.scale(pygame.image.load("jupiter.png"), (PLANET_SIZE * 2, PLANET_SIZE * 2))
+SHIP = pygame.transform.scale(pygame.image.load("navesita.png"), (SHIP_SIZE, SHIP_SIZE))
 
 WHITE = (255, 255, 255)
 RED = (255, 0, 0)
@@ -60,7 +63,10 @@ class Spacecraft:
         self.y += self.vel_y
 
     def draw(self):
-        pygame.draw.circle(win, RED, (int(self.x), int(self.y)), OBJ_SIZE)
+        # pygame.draw.circle(win, RED, (int(self.x), int(self.y)), OBJ_SIZE)
+        rotated_ship = pygame.transform.rotate(SHIP, -math.degrees(math.atan2(self.vel_y, self.vel_x)))
+        rect = rotated_ship.get_rect(center=(int(self.x), int(self.y)))
+        win.blit(rotated_ship, rect.topleft)
 
 
 def create_ship(location, mouse):
@@ -122,12 +128,14 @@ def main():
 
         if temp_obj_pos:
             pygame.draw.line(win, WHITE, temp_obj_pos, mouse_pos, 2)
-            pygame.draw.circle(win, RED, temp_obj_pos, OBJ_SIZE)
+            win.blit(SHIP, (temp_obj_pos[0] - SHIP_SIZE // 2, temp_obj_pos[1] - SHIP_SIZE // 2))
+            # pygame.draw.circle(win, RED, temp_obj_pos, OBJ_SIZE)
 
         for obj in objects[:]:
             obj.draw()
             obj.move(planet)
-            off_screen = obj.x < 0 or obj.x > WIDTH or obj.y < 0 or obj.y > HEIGHT
+            # off_screen = obj.x < 0 or obj.x > WIDTH or obj.y < 0 or obj.y > HEIGHT
+            off_screen = obj.x < -SHIP_SIZE or obj.x > WIDTH + SHIP_SIZE or obj.y < -SHIP_SIZE or obj.y > HEIGHT + SHIP_SIZE
             collided = math.sqrt((obj.x - planet.x) ** 2 + (obj.y - planet.y) ** 2) <= PLANET_SIZE
             if off_screen or collided:
                 objects.remove(obj)
